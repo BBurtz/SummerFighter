@@ -241,7 +241,7 @@ BoxCollider2D:
   m_GameObject: {fileID: 644602009}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 6200000, guid: a394a6f0689be0c4bb77e14d75b456f5, type: 2}
+  m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -507,8 +507,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerControls: {fileID: 2035973594}
+  grounded: 1
   AccelerationSpeed: 20
-  maxSpeed: 100
+  deccelerationSpeed: 20
+  maxSpeed: 30
   JumpForce: 200
   rb: {fileID: 2035973589}
 --- !u!114 &2035973594

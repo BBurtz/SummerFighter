@@ -16,9 +16,11 @@ public class Character : MonoBehaviour
     private InputAction JumpAction;
 
     private bool CurrentlyMoving;
+    public bool grounded;
     private Vector2 MoveVal;
 
     public float AccelerationSpeed;
+    public float deccelerationSpeed;
     public float maxSpeed;
     public float JumpForce;
 
@@ -45,10 +47,21 @@ public class Character : MonoBehaviour
         {
             rb.AddForce(new Vector2(c * AccelerationSpeed, 0));
         }
+        else if(grounded)
+        {
+            if(rb.velocity.x < -0.1)
+            {
+                rb.velocity = new Vector2(rb.velocity.x + (deccelerationSpeed * (rb.velocity.x / maxSpeed)), 0);
+            }
+            else if(rb.velocity.x > 0.1)
+            {
+                rb.velocity = new Vector2(rb.velocity.x - (deccelerationSpeed * (rb.velocity.x/maxSpeed)), 0);
+            }
+        }
 
         if (rb.velocity.magnitude > maxSpeed)
             {
-                Vector2 limitedVel = rb.velocity * maxSpeed;
+                Vector2 limitedVel = rb.velocity.normalized * maxSpeed;
                 rb.velocity = new Vector3(limitedVel.x, rb.velocity.y);
             }
 
