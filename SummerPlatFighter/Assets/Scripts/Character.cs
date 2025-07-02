@@ -12,21 +12,26 @@ using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
 public class Character : MonoBehaviour
 {
     public PlayerInput playerControls;
+    public Shield myShield;
+
+    public int Percent;
 
     public bool FacingRight;
     public bool inAction;
     public bool fastFalling;
+    public bool shielding;
 
     private InputAction MoveAction;
     private InputAction JumpAction;
     private InputAction AttackAction;
     private InputAction StrongAction;
     private InputAction SpecialAction;
+    private InputAction ShieldAction;
 
     public int MaxInAirJumps;
     private int currentJumps;
 
-    private bool CurrentlyMoving;
+    private bool InHitstun;
     public bool grounded;
     public bool LedgeGrabbed;
     private Vector2 MoveVal;
@@ -45,7 +50,7 @@ public class Character : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        Percent = 0;
     }
 
     // Update is called once per frame
@@ -57,7 +62,7 @@ public class Character : MonoBehaviour
     private void FixedUpdate()
     {
         MoveVal = MoveAction.ReadValue<Vector2>();
-        if (LedgeGrabbed)
+        if (LedgeGrabbed && !InHitstun && !shielding && !inAction)
         {
             rb.gravityScale = 0;
             if(MoveVal.x > 0.1 || MoveVal.x < -0.1)
@@ -86,7 +91,7 @@ public class Character : MonoBehaviour
                 }
             }
         }
-        else
+        else if (!InHitstun && !shielding && !inAction || !grounded)
         {
             if (!fastFalling)
             {
@@ -121,6 +126,14 @@ public class Character : MonoBehaviour
                 rb.velocity = new Vector3(limitedVel.x, rb.velocity.y);
             }
         }
+        else if (shielding && !InHitstun && !inAction)
+        {
+            var c = MoveVal.x;
+            if (c < -0.1 || c > 0.1)
+            {
+                //roll
+            }
+        }
 
     }
 
@@ -132,13 +145,32 @@ public class Character : MonoBehaviour
         StrongAction = playerControls.currentActionMap.FindAction("Strong");
         AttackAction = playerControls.currentActionMap.FindAction("Attack");
         SpecialAction = playerControls.currentActionMap.FindAction("Special");
+        ShieldAction = playerControls.currentActionMap.FindAction("Shield");
         JumpAction.started += Jump;
-        MoveAction.performed += move;
-        MoveAction.canceled -= stop;
+        ShieldAction.started += Shield;
+        ShieldAction.canceled += DropShield;
         StrongAction.performed += StrongStart;
         StrongAction.canceled += StrongLaunch;
         AttackAction.started += Attack;
         SpecialAction.started += Special;
+    }
+
+    private void DropShield(InputAction.CallbackContext context)
+    {
+        if (grounded)
+        {
+            shielding = false;
+            myShield.ShieldDown();
+        }
+    }
+
+    private void Shield(InputAction.CallbackContext context)
+    {
+        if (grounded)
+        {
+            shielding = true;
+            myShield.ShieldUp();
+        }
     }
 
     private void Special(InputAction.CallbackContext context)
@@ -220,11 +252,6 @@ public class Character : MonoBehaviour
         }
     }
 
-    private void move(InputAction.CallbackContext context)
-    {
-        CurrentlyMoving = true;
-    }
-
     private void Jump(InputAction.CallbackContext context)
     {
         if (!LedgeGrabbed)
@@ -244,13 +271,6 @@ public class Character : MonoBehaviour
             rb.AddForce(new Vector2(0, AirJumpForce));
         }
 
-    }
-    private void stop(InputAction.CallbackContext context)
-    {
-        /*StopCoroutine(movementcoroutineInstance);
-        movementcoroutineInstance = null;*/
-        CurrentlyMoving = false;
-        MoveVal = new Vector2(0, rb.velocity.y);
     }
 
     public void grabLedge(GameObject Ledge)
@@ -280,5 +300,37 @@ public class Character : MonoBehaviour
     {
         rb.gravityScale = GravityForce;
         fastFalling = false;
+    }
+
+    public void TakeKnockback(float Base, float scaling, Vector2 angle, bool facingRight, int Damage, int Priority, int HitstunFrames)
+    {
+        Percent += Damage;
+        //hitstop
+        InHitstun = true;
+        StartCoroutine(HitStunTimer(HitstunFrames));
+        Vector2 KnockbackLaunch = angle.normalized * Base;
+        if (!facingRight)
+        {
+            KnockbackLaunch.x *= -1;
+        }
+        KnockbackLaunch = KnockbackLaunch + (angle.normalized * scaling * Percent);
+        rb.velocity = Vector2.zero;
+        rb.AddForce(KnockbackLaunch, ForceMode2D.Impulse);
+    }
+
+    public IEnumerator HitStunTimer(int HitstunFrames)
+    {
+        int counter = 0;
+        while (counter < HitstunFrames)
+        {
+            yield return new WaitForEndOfFrame();
+            counter++;
+        }
+        InHitstun = false;
+    }
+
+    public void actionDone()
+    {
+
     }
 }

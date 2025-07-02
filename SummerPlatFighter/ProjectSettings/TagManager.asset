@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Ground
   - Ledge
+  - HurtBox
   layers:
   - Default
   - TransparentFX
