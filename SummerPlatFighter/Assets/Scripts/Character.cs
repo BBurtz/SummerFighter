@@ -20,6 +20,8 @@ public class Character : MonoBehaviour
     public bool inAction;
     public bool fastFalling;
     public bool shielding;
+    private bool AirDodgeing;
+    private bool holdingShield;
 
     private InputAction MoveAction;
     private InputAction JumpAction;
@@ -44,7 +46,13 @@ public class Character : MonoBehaviour
 
     public Rigidbody2D rb;
 
+    public float airdodgeForce;
+
     public Vector2 LedgeGrabPosition;
+
+    private Vector2[] PastInputs = new Vector2[2];
+
+    public Coroutine AirdodgeCoroutine;
 
 
     // Start is called before the first frame update
@@ -56,85 +64,142 @@ public class Character : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if(holdingShield && grounded && !shielding)
+        {
+            shielding = true;
+            myShield.ShieldUp();
+        }
+        if(grounded && AirdodgeCoroutine != null)
+        {
+            StopCoroutine(AirdodgeCoroutine);
+            rb.gravityScale = GravityForce;
+            AirDodgeing = false;
+            actionDone();
+        }
     }
 
     private void FixedUpdate()
     {
+        PastInputs[1] = PastInputs[0];
+        PastInputs[0] = MoveVal;
         MoveVal = MoveAction.ReadValue<Vector2>();
-        if (LedgeGrabbed && !InHitstun && !shielding && !inAction)
+        if (!AirDodgeing)
         {
-            rb.gravityScale = 0;
-            if(MoveVal.x > 0.1 || MoveVal.x < -0.1)
+            if (LedgeGrabbed && !InHitstun && !shielding && !inAction)
             {
-                if (FacingRight)
+                rb.gravityScale = 0;
+                if (MoveVal.x > 0.1 || MoveVal.x < -0.1)
                 {
-                    if (MoveVal.x > .1)
+                    if (FacingRight)
                     {
-                        Debug.Log("normal Getup");
+                        if (MoveVal.x > .1)
+                        {
+                            Debug.Log("normal Getup");
+                        }
+                        else if (MoveVal.x < -.1)
+                        {
+                            Debug.Log("drop");
+                        }
                     }
-                    else if (MoveVal.x < -.1)
+                    else
                     {
-                        Debug.Log("drop");
+                        if (MoveVal.x < -.1)
+                        {
+                            Debug.Log("normal Getup");
+                        }
+                        else if (MoveVal.x > .1)
+                        {
+                            Debug.Log("drop");
+                        }
                     }
                 }
-                else
+            }
+            else if (!InHitstun && !shielding && !inAction || !grounded)
+            {
+                if (!fastFalling)
                 {
-                    if (MoveVal.x < -.1)
+                    resetGravity();
+                }
+
+                if (grounded)
+                {
+                    currentJumps = MaxInAirJumps;
+                }
+
+                if (!grounded && MoveVal.y < -.8)
+                {
+                    //fastfall
+                    rb.gravityScale = 1.75f * GravityForce;
+                    fastFalling = true;
+                }
+
+                var c = MoveVal.x;
+                if (c < -0.1 || c > 0.1)
+                {
+                    bool noDashDance = true;
+                    if (c > 0.5 && grounded)
                     {
-                        Debug.Log("normal Getup");
+                        if (PastInputs[0].x < -.5 || PastInputs[1].x < -.5)
+                        {
+                            rb.velocity = new Vector2(rb.velocity.x * -1, rb.velocity.y);
+                            noDashDance = false;
+                        }
                     }
-                    else if (MoveVal.x > .1)
+                    else if(c < -0.5 && grounded)
                     {
-                        Debug.Log("drop");
+                        if(PastInputs[0].x > .5 || PastInputs[1].x > .5)
+                        {
+                            rb.velocity = new Vector2(rb.velocity.x * -1, rb.velocity.y);
+                            noDashDance = false;
+                        }
+                    }
+
+                    if (noDashDance)
+                    {
+                        rb.AddForce(new Vector2(c * AccelerationSpeed, 0));
+                    }
+                }
+                else if (grounded)
+                {
+                    rb.velocity = new Vector2(0, rb.velocity.y);
+                }
+
+                if (rb.velocity.magnitude > maxSpeed)
+                {
+                    Vector2 limitedVel = rb.velocity.normalized * maxSpeed;
+                    rb.velocity = new Vector3(limitedVel.x, rb.velocity.y);
+                }
+            }
+            else if (shielding && !InHitstun && !inAction && grounded)
+            {
+                var c = MoveVal.x;
+                if (c < -0.1 || c > 0.1)
+                {
+                    if (FacingRight)
+                    {
+                        if (c > 0.1)
+                        {
+                            //front roll
+                        }
+                        else if (c < -0.1)
+                        {
+                            //back roll
+                        }
+                    }
+                    else
+                    {
+                        if (c > 0.1)
+                        {
+                            //back Roll
+                        }
+                        else if (c < -0.1)
+                        {
+                            //front roll
+                        }
                     }
                 }
             }
         }
-        else if (!InHitstun && !shielding && !inAction || !grounded)
-        {
-            if (!fastFalling)
-            {
-                resetGravity();
-            }
-
-            if (grounded)
-            {
-                currentJumps = MaxInAirJumps;
-            }
-
-            if(!grounded && MoveVal.y < -.8)
-            {
-                //fastfall
-                rb.gravityScale = 1.75f * GravityForce;
-                fastFalling = true;
-            }
-
-            var c = MoveVal.x;
-            if (c < -0.1 || c > 0.1)
-            {
-                rb.AddForce(new Vector2(c * AccelerationSpeed, 0));
-            }
-            else if (grounded)
-            {
-                rb.velocity = new Vector2(0, rb.velocity.y);
-            }
-
-            if (rb.velocity.magnitude > maxSpeed)
-            {
-                Vector2 limitedVel = rb.velocity.normalized * maxSpeed;
-                rb.velocity = new Vector3(limitedVel.x, rb.velocity.y);
-            }
-        }
-        else if (shielding && !InHitstun && !inAction)
-        {
-            var c = MoveVal.x;
-            if (c < -0.1 || c > 0.1)
-            {
-                //roll
-            }
-        }
-
     }
 
     private void OnEnable()
@@ -147,7 +212,7 @@ public class Character : MonoBehaviour
         SpecialAction = playerControls.currentActionMap.FindAction("Special");
         ShieldAction = playerControls.currentActionMap.FindAction("Shield");
         JumpAction.started += Jump;
-        ShieldAction.started += Shield;
+        ShieldAction.performed += Shield;
         ShieldAction.canceled += DropShield;
         StrongAction.performed += StrongStart;
         StrongAction.canceled += StrongLaunch;
@@ -157,6 +222,7 @@ public class Character : MonoBehaviour
 
     private void DropShield(InputAction.CallbackContext context)
     {
+        holdingShield = false;
         if (grounded)
         {
             shielding = false;
@@ -166,10 +232,15 @@ public class Character : MonoBehaviour
 
     private void Shield(InputAction.CallbackContext context)
     {
+        holdingShield = true;
         if (grounded)
         {
             shielding = true;
             myShield.ShieldUp();
+        }
+        else
+        {
+            StartCoroutine(airDodge());
         }
     }
 
@@ -179,7 +250,6 @@ public class Character : MonoBehaviour
         {
             resetGravity();
         }
-
         if (MoveVal.magnitude <= 0.1)
         {
             //NSpecial
@@ -222,6 +292,58 @@ public class Character : MonoBehaviour
         }
     }
 
+    public void HorizontalBReverseCheck()
+    {
+        if (FacingRight)
+        {
+            if (MoveVal.x < -.5 || PastInputs[0].x < -.5 || PastInputs[1].x < -.5)
+            {
+                FacingRight = false;
+                if (!grounded)
+                {
+                    rb.velocity = new Vector2(rb.velocity.x * -1, rb.velocity.y);
+                }
+            }
+        }
+        else
+        {
+            if (MoveVal.x > .5 || PastInputs[0].x > .5 || PastInputs[1].x> .5)
+            {
+                FacingRight = true;
+                if (!grounded)
+                {
+                    rb.velocity = new Vector2(rb.velocity.x * -1, rb.velocity.y);
+                }
+            }
+        }
+    }
+    
+    public void VirticleBReverseCheck()
+    {
+        if (FacingRight)
+        {
+            if (MoveVal.x < -.3 || PastInputs[0].x < -.3 || PastInputs[1].x < -.3)
+            {
+                FacingRight = false;
+                if (!grounded)
+                {
+                    rb.velocity = new Vector2(rb.velocity.x * -1, rb.velocity.y);
+                }
+            }
+        }
+        else
+        {
+            if (MoveVal.x > .3 || PastInputs[0].x > .3 || PastInputs[1].x> .3)
+            {
+                FacingRight = true;
+                if (!grounded)
+                {
+                    rb.velocity = new Vector2(rb.velocity.x * -1, rb.velocity.y);
+                }
+            }
+        }
+    }
+
     private void StrongLaunch(InputAction.CallbackContext context)
     {
         throw new NotImplementedException();
@@ -254,11 +376,35 @@ public class Character : MonoBehaviour
 
     private void Jump(InputAction.CallbackContext context)
     {
-        if (!LedgeGrabbed)
+        if (shielding)
         {
-            resetGravity();
+            myShield.ShieldDown();
         }
 
+        if (grounded)
+        {
+            if (!LedgeGrabbed)
+            {
+                resetGravity();
+            }
+            //jump squat animation
+        }
+        else if (LedgeGrabbed)
+        {
+            //ledge Jump animation
+        }
+        else if (currentJumps > 0)
+        {
+            JumpUp();
+            if (!LedgeGrabbed)
+            {
+                resetGravity();
+            }
+        }
+    }
+
+    private void JumpUp()
+    {
         if (grounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, 0);
@@ -270,7 +416,6 @@ public class Character : MonoBehaviour
             rb.velocity = new Vector2(rb.velocity.x, 0);
             rb.AddForce(new Vector2(0, AirJumpForce));
         }
-
     }
 
     public void grabLedge(GameObject Ledge)
@@ -323,7 +468,7 @@ public class Character : MonoBehaviour
         int counter = 0;
         while (counter < HitstunFrames)
         {
-            yield return new WaitForEndOfFrame();
+            yield return new WaitForSecondsRealtime(1/60);
             counter++;
         }
         InHitstun = false;
@@ -331,6 +476,38 @@ public class Character : MonoBehaviour
 
     public void actionDone()
     {
+        inAction = false;
+    }
 
+    public IEnumerator airDodge()
+    {
+        AirDodgeing=true;
+        inAction = true;
+        rb.gravityScale = 0;
+        rb.velocity = Vector2.zero;
+        int counter = 0;
+        while (counter < 2)
+        {
+            counter++;
+            yield return new WaitForSecondsRealtime(1 / 60);
+        }
+        rb.AddForce(MoveVal.normalized * airdodgeForce);
+        counter = 0;
+        //become invincible
+        while(counter < 19)
+        {
+            counter++;
+            yield return new WaitForSecondsRealtime(1 / 60);
+        }
+        counter = 0;
+        rb.velocity = Vector2.zero;
+        while(counter < 12)
+        {
+            counter++;
+            yield return new WaitForSecondsRealtime(1 / 60);
+        }
+        rb.gravityScale = GravityForce;
+        actionDone();
+        AirDodgeing = false;
     }
 }

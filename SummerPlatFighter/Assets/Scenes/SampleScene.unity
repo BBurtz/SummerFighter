@@ -1323,6 +1323,7 @@ MonoBehaviour:
   AirJumpForce: 200
   GravityForce: 1
   rb: {fileID: 2035973589}
+  airdodgeForce: 500
   LedgeGrabPosition: {x: 1, y: 1}
 --- !u!114 &2035973594
 MonoBehaviour:
