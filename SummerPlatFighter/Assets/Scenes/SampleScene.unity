@@ -337,7 +337,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56ec0bd04ab5ca647864acc7cedae5cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  character: {fileID: 2035973593}
+  character: {fileID: 2035973595}
 --- !u!70 &418166871
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -510,6 +510,7 @@ MonoBehaviour:
   active: 0
   HitBoxes: []
   hitstunFrames: 30
+  Owner: {fileID: 0}
 --- !u!212 &488255116
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -721,6 +722,7 @@ MonoBehaviour:
   ShieldHealthdegenRate: 5
   ShieldRenderer: {fileID: 560164643}
   ShieldCollider: {fileID: 560164642}
+  owner: {fileID: 2035973595}
 --- !u!58 &560164642
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -980,7 +982,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb986c50c2c612c40884fd093c77e828, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Character: {fileID: 2035973593}
+  Character: {fileID: 2035973595}
 --- !u!212 &591893129
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1438,8 +1440,8 @@ GameObject:
   - component: {fileID: 2035973591}
   - component: {fileID: 2035973590}
   - component: {fileID: 2035973589}
-  - component: {fileID: 2035973593}
   - component: {fileID: 2035973594}
+  - component: {fileID: 2035973595}
   m_Layer: 0
   m_Name: Capsule
   m_TagString: Untagged
@@ -1580,40 +1582,6 @@ Transform:
   - {fileID: 591893127}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2035973593
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2035973588}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8c6936a88d5f4cc4e8dfe9d1fb9063ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  playerControls: {fileID: 2035973594}
-  myShield: {fileID: 560164641}
-  Percent: 0
-  Stocks: 3
-  FacingRight: 0
-  inAction: 0
-  fastFalling: 0
-  shielding: 0
-  MaxInAirJumps: 1
-  InHitstun: 0
-  grounded: 0
-  LedgeGrabbed: 0
-  AccelerationSpeed: 30
-  maxSpeed: 30
-  AirDriftSpeed: 10
-  AirMaxSpeed: 10
-  groundedJumpForce: 300
-  AirJumpForce: 200
-  GravityForce: 1
-  rb: {fileID: 2035973589}
-  airdodgeForce: 500
-  LedgeGrabPosition: {x: 1, y: 1}
 --- !u!114 &2035973594
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1644,6 +1612,62 @@ MonoBehaviour:
   m_DefaultActionMap: Player1
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
+--- !u!114 &2035973595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2035973588}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8469bf352de3e1344aabfa7058991ac5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Setup: 0
+  playerControls: {fileID: 2035973594}
+  myShield: {fileID: 560164641}
+  rb: {fileID: 2035973589}
+  Percent: 0
+  Stocks: 3
+  FacingRight: 0
+  inAction: 0
+  fastFalling: 0
+  shielding: 0
+  MaxInAirJumps: 1
+  meter: 0
+  UsingMeter: 0
+  InHitstun: 0
+  grounded: 0
+  LedgeGrabbed: 0
+  FreeFall: 0
+  MoveVal: {x: 0, y: 0}
+  AccelerationSpeed: 30
+  maxSpeed: 30
+  AirDriftSpeed: 10
+  AirMaxSpeed: 10
+  groundedJumpForce: 300
+  AirJumpForce: 200
+  GravityForce: 1
+  airdodgeForce: 500
+  LedgeGrabPosition: {x: 1, y: 1}
+  WallProjectile: {fileID: 4103495727286668538, guid: 5688be9698fdd73408c00c74f6ee2215, type: 3}
+  BairCard: {fileID: 0}
+  JabCard: {fileID: 0}
+  Animator: {fileID: 0}
+  Shuffled: 0
+  PoweredUpSpecial: 0
+  ShuffledLength: 5
+  TeleportDistance: 5
+  PoweredUpTeleportDistance: 7
+  SpeedupTimer: 7
+  SpedUpGravity: 1.5
+  SpedUpAccelerationSpeed: 40
+  SpedUpMaxSpeed: 40
+  SpedUpAirDriftSpeed: 20
+  SpedUpAirMaxSpeed: 20
+  WallPushSpeed: 10
+  PoweredUpWallPushSpeed: 20
 --- !u!1 &2142964609
 GameObject:
   m_ObjectHideFlags: 0
@@ -1690,7 +1714,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d7f1a44d7ad07c408ef5c91cffca542, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ConnectedCharacter: {fileID: 2035973593}
+  ConnectedCharacter: {fileID: 2035973595}
 --- !u!212 &2142964612
 SpriteRenderer:
   m_ObjectHideFlags: 0
