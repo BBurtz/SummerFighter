@@ -9,21 +9,26 @@ using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 using static UnityEditor.Timeline.TimelinePlaybackControls;
 using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
+using NaughtyAttributes;
+using System.IO;
 
 public class Character : MonoBehaviour
 {
-    public PlayerInput playerControls;
-    public Shield myShield;
+    public bool Setup;
 
-    public int Percent;
-    public int Stocks;
+    [ShowIf("Setup")] public PlayerInput playerControls;
+    [ShowIf("Setup")] public Shield myShield;
+    [ShowIf("Setup")] public Rigidbody2D rb;
+
+    [Foldout("In Game Data")] public int Percent;
+    [Foldout("In Game Data")] public int Stocks;
 
     private GameManager GM;
 
-    public bool FacingRight;
-    public bool inAction;
-    public bool fastFalling;
-    public bool shielding;
+    [Foldout("In Game Data")] public bool FacingRight;
+    [Foldout("In Game Data")] public bool inAction;
+    [Foldout("In Game Data")] public bool fastFalling;
+    [Foldout("In Game Data")] public bool shielding;
     private bool AirDodgeing;
     private bool holdingShield;
 
@@ -35,32 +40,35 @@ public class Character : MonoBehaviour
     private InputAction ShieldAction;
     private InputAction MeterAction;
 
-    public int MaxInAirJumps;
+
+    [Foldout("Balance")] public int MaxInAirJumps;
     private int currentJumps;
-    public int meter;
+    [Foldout("In Game Data")] public int meter;
+    [Foldout("In Game Data")] public bool UsingMeter;
 
-    public bool InHitstun;
-    public bool grounded;
-    public bool LedgeGrabbed;
-    private Vector2 MoveVal;
+    [Foldout("In Game Data")] public bool InHitstun;
+    [Foldout("In Game Data")] public bool grounded;
+    [Foldout("In Game Data")] public bool LedgeGrabbed;
+    [Foldout("In Game Data")] public bool FreeFall;
+    [Foldout("In Game Data")] public Vector2 MoveVal;
 
-    public float AccelerationSpeed;
-    public float maxSpeed;
-    public float AirDriftSpeed;
-    public float AirMaxSpeed;
-    public float groundedJumpForce;
-    public float AirJumpForce;
-    public float GravityForce;
+    [Foldout("Balance")] public float AccelerationSpeed;
+    [Foldout("Balance")] public float maxSpeed;
+    [Foldout("Balance")] public float AirDriftSpeed;
+    [Foldout("Balance")] public float AirMaxSpeed;
+    [Foldout("Balance")] public float groundedJumpForce;
+    [Foldout("Balance")] public float AirJumpForce;
+    [Foldout("Balance")] public float GravityForce;
 
-    public Rigidbody2D rb;
 
-    public float airdodgeForce;
 
-    public Vector2 LedgeGrabPosition;
+    [Foldout("Balance")] public float airdodgeForce;
+
+    [Foldout("Balance")] public Vector2 LedgeGrabPosition;
 
     private Vector2[] PastInputs = new Vector2[2];
 
-    public Coroutine AirdodgeCoroutine;
+    [Foldout("In Game Data")] public Coroutine AirdodgeCoroutine;
 
 
     // Start is called before the first frame update
@@ -277,19 +285,27 @@ public class Character : MonoBehaviour
         }
         if (MoveVal.magnitude <= 0.1)
         {
-            //NSpecial
+            NSpecial();
         }
         else if (MathF.Abs(MoveVal.x) > Mathf.Abs(MoveVal.y))
         {
-            //Side Special
+            if(MoveVal.x > 0)
+            {
+                FacingRight = true;
+            }
+            else if (MoveVal.x < 0)
+            {
+                FacingRight = false;
+            }
+            FSpecial();
         }
         else if (MoveVal.y > 0)
         {
-            //Up Special
+            USpecial();
         }
         else
         {
-            //Down Special
+            DSpecial();
         }
     }
 
@@ -299,21 +315,53 @@ public class Character : MonoBehaviour
         {
             resetGravity();
         }
-        if (MoveVal.magnitude <= 0.1)
+        if (MoveVal.magnitude <= 0.1 && !inAction)
         {
-            //Jab/nair
+            if (grounded)
+            {
+                Jab();
+            }
+            else
+            {
+                Nair();
+            }
         }
-        else if(MathF.Abs(MoveVal.x) > Mathf.Abs(MoveVal.y))
+        else if(MathF.Abs(MoveVal.x) > Mathf.Abs(MoveVal.y) && !inAction)
         {
-            //Ftilt/bair/fair
+            if (grounded)
+            {
+                Ftilt();
+            }
+            else if ((FacingRight && MoveVal.x > 0) || (!FacingRight && MoveVal.x < 0))
+            {
+                Fair();
+            }
+            else
+            {
+                Bair();
+            }
         }
-        else if(MoveVal.y > 0)
+        else if(MoveVal.y > 0 && !inAction)
         {
-            //upTilt/upAir
+            if (grounded)
+            {
+                UTilt();
+            }
+            else
+            {
+                Uair();
+            }
         }
-        else
+        else if(!inAction)
         {
-            //DownTilt/Dair
+            if (grounded)
+            {
+                DTilt();
+            }
+            else
+            {
+                Dair();
+            }
         }
     }
 
@@ -467,10 +515,13 @@ public class Character : MonoBehaviour
         //inviciblility
     }
 
-    private void resetGravity()
+    public void resetGravity()
     {
-        rb.gravityScale = GravityForce;
-        fastFalling = false;
+        if (LedgeGrabbed)
+        {
+            rb.gravityScale = GravityForce;
+            fastFalling = false;
+        }
     }
 
     public void TakeKnockback(float Base, float scaling, Vector2 angle, bool facingRight, int Damage, int Priority, int HitstunFrames)
@@ -558,5 +609,105 @@ public class Character : MonoBehaviour
         {
             meter = 300;
         }
+    }
+
+    public virtual void Jab()
+    {
+
+    }
+
+    public virtual void Ftilt()
+    {
+
+    }
+
+    public virtual void DTilt()
+    {
+
+    }
+
+    public virtual void UTilt()
+    {
+
+    }
+
+    public virtual void DashAttack()
+    {
+
+    }
+
+    public virtual void FStrongStart()
+    {
+
+    }
+
+    public virtual void FStrongRelease()
+    {
+
+    }
+
+    public virtual void DownStrongStart()
+    {
+
+    }
+
+    public virtual void DownStrongRelease()
+    {
+
+    }
+
+    public virtual void UpStrongStart()
+    {
+
+    }
+    
+    public virtual void UpStrongRelease()
+    {
+
+    }
+
+    public virtual void Nair()
+    {
+
+    }
+
+    public virtual void Fair()
+    {
+
+    }
+
+    public virtual void Bair()
+    {
+
+    }
+
+    public virtual void Dair()
+    {
+
+    }
+    
+    public virtual void Uair()
+    {
+
+    }
+
+    public virtual void NSpecial()
+    {
+
+    }
+
+    public virtual void FSpecial()
+    {
+
+    }
+
+    public virtual void DSpecial()
+    {
+
+    }
+
+    public virtual void USpecial()
+    {
+
     }
 }

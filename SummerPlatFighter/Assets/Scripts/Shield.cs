@@ -14,6 +14,8 @@ public class Shield : MonoBehaviour
 
     public Coroutine CurrentCoroutineInstance;
 
+    public Character owner;
+
     private void Start()
     {
         ShieldRenderer.enabled = false;
