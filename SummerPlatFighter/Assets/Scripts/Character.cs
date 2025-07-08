@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Unity.Burst.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -15,6 +16,9 @@ public class Character : MonoBehaviour
     public Shield myShield;
 
     public int Percent;
+    public int Stocks;
+
+    private GameManager GM;
 
     public bool FacingRight;
     public bool inAction;
@@ -29,17 +33,21 @@ public class Character : MonoBehaviour
     private InputAction StrongAction;
     private InputAction SpecialAction;
     private InputAction ShieldAction;
+    private InputAction MeterAction;
 
     public int MaxInAirJumps;
     private int currentJumps;
+    public int meter;
 
-    private bool InHitstun;
+    public bool InHitstun;
     public bool grounded;
     public bool LedgeGrabbed;
     private Vector2 MoveVal;
 
     public float AccelerationSpeed;
     public float maxSpeed;
+    public float AirDriftSpeed;
+    public float AirMaxSpeed;
     public float groundedJumpForce;
     public float AirJumpForce;
     public float GravityForce;
@@ -59,6 +67,7 @@ public class Character : MonoBehaviour
     void Start()
     {
         Percent = 0;
+        GM = FindObjectOfType<GameManager>();
     }
 
     // Update is called once per frame
@@ -114,7 +123,7 @@ public class Character : MonoBehaviour
                     }
                 }
             }
-            else if (!InHitstun && !shielding && !inAction || !grounded)
+            else if (!InHitstun && !shielding && !inAction && grounded)
             {
                 if (!fastFalling)
                 {
@@ -124,13 +133,6 @@ public class Character : MonoBehaviour
                 if (grounded)
                 {
                     currentJumps = MaxInAirJumps;
-                }
-
-                if (!grounded && MoveVal.y < -.8)
-                {
-                    //fastfall
-                    rb.gravityScale = 1.75f * GravityForce;
-                    fastFalling = true;
                 }
 
                 var c = MoveVal.x;
@@ -164,10 +166,11 @@ public class Character : MonoBehaviour
                     rb.velocity = new Vector2(0, rb.velocity.y);
                 }
 
-                if (rb.velocity.magnitude > maxSpeed)
+                Vector2 temp = new Vector2(rb.velocity.x, 0);
+                if (temp.magnitude > maxSpeed)
                 {
-                    Vector2 limitedVel = rb.velocity.normalized * maxSpeed;
-                    rb.velocity = new Vector3(limitedVel.x, rb.velocity.y);
+                    Vector2 limitedVelocity = temp.normalized * maxSpeed;
+                    rb.velocity = new Vector3(limitedVelocity.x, rb.velocity.y);
                 }
             }
             else if (shielding && !InHitstun && !inAction && grounded)
@@ -197,6 +200,28 @@ public class Character : MonoBehaviour
                             //front roll
                         }
                     }
+                }
+            }
+            else if (!shielding && !InHitstun && !grounded)
+            {
+
+                if (!grounded && MoveVal.y < -.8)
+                {
+                    //fastfall
+                    rb.gravityScale = 1.75f * GravityForce;
+                    fastFalling = true;
+                }
+
+                var c = MoveVal.x;
+                if (c < -0.1 || c > 0.1)
+                {
+                   rb.AddForce(new Vector2(c * AirDriftSpeed, 0));
+                }
+                Vector2 temp = new Vector2(rb.velocity.x, 0);
+                if (temp.magnitude > AirMaxSpeed)
+                { 
+                    Vector2 limitedVelocity = temp.normalized * AirMaxSpeed;
+                    rb.velocity = new Vector3(limitedVelocity.x, rb.velocity.y);
                 }
             }
         }
@@ -388,6 +413,7 @@ public class Character : MonoBehaviour
                 resetGravity();
             }
             //jump squat animation
+            JumpUp();
         }
         else if (LedgeGrabbed)
         {
@@ -450,10 +476,12 @@ public class Character : MonoBehaviour
     public void TakeKnockback(float Base, float scaling, Vector2 angle, bool facingRight, int Damage, int Priority, int HitstunFrames)
     {
         Percent += Damage;
+        GainMeter(Damage / 2);
         //hitstop
         InHitstun = true;
         StartCoroutine(HitStunTimer(HitstunFrames));
-        Vector2 KnockbackLaunch = angle.normalized * Base;
+        Vector2 temp = angle + MoveVal;
+        Vector2 KnockbackLaunch = temp.normalized * Base;
         if (!facingRight)
         {
             KnockbackLaunch.x *= -1;
@@ -509,5 +537,26 @@ public class Character : MonoBehaviour
         rb.gravityScale = GravityForce;
         actionDone();
         AirDodgeing = false;
+    }
+
+    public void Die()
+    {
+        Stocks--;
+        //Play Death VFX
+        if(Stocks == 0)
+        {
+            GM.GameOver();
+        }
+        rb.velocity = Vector2.zero;
+        transform.position = GM.giveRespawnPoint().transform.position;
+    }
+
+    public void GainMeter(int Amount)
+    {
+        meter += Amount;
+        if(meter > 300)
+        {
+            meter = 300;
+        }
     }
 }

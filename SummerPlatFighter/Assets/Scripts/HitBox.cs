@@ -14,6 +14,7 @@ public class HitBox : MonoBehaviour
     public List<HitBox> HitBoxes;
     public int hitstunFrames;
 
+    public Character Owner;
     private void Start()
     {
         active = true;
@@ -37,6 +38,7 @@ public class HitBox : MonoBehaviour
             {
                 hitBox.active = false;
             }
+            //Owner.GainMeter(Damage);
         }
     }
 }
