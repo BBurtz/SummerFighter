@@ -21,7 +21,16 @@ public class HitBox : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.tag == "Shield" && active && Owner != collision.gameObject.GetComponent<Shield>().owner)
+        if (collision.gameObject.tag == "Counter" && active && Owner != collision.gameObject.GetComponent<Shield>().owner)
+        {
+            collision.gameObject.GetComponent<HurtBox>().callCounter();
+            active = false;
+            foreach (HitBox hitBox in HitBoxes)
+            {
+                hitBox.active = false;
+            }
+        }
+        else if (collision.gameObject.tag == "Shield" && active && Owner != collision.gameObject.GetComponent<Shield>().owner)
         {
             collision.gameObject.GetComponent<Shield>().takeDamage(ShieldDamage);
             active = false;

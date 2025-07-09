@@ -95,7 +95,7 @@ public class Character : MonoBehaviour
         }
     }
 
-    private void FixedUpdate()
+    public virtual void FixedUpdate()
     {
         PastInputs[1] = PastInputs[0];
         PastInputs[0] = MoveVal;
@@ -526,6 +526,7 @@ public class Character : MonoBehaviour
 
     public void TakeKnockback(float Base, float scaling, Vector2 angle, bool facingRight, int Damage, int Priority, int HitstunFrames)
     {
+        resetGravity();
         Percent += Damage;
         GainMeter(Damage / 2);
         //hitstop
