@@ -59,7 +59,7 @@ public class SpiScript : Character
 
     public override void Jab()
     {
-
+        
     }
 
     public override void Ftilt()
@@ -194,6 +194,8 @@ public class SpiScript : Character
             PoweredUpSpecial = false;
         }
         USpeicalEffect();
+        StartCoroutine(EndUpSpecialTimer());
+        inAction = true;
     }
 
     public void NspecialEffect()
@@ -203,13 +205,20 @@ public class SpiScript : Character
 
     public void FSpecialEffect()
     {
-        rb.AddForce(sideSpecialForceAndDirection);
-        //Monkey Flip kick
+        if (FacingRight)
+        {
+            rb.AddForce(sideSpecialForceAndDirection);
+        }
+        else
+        {
+            rb.AddForce(new Vector2(sideSpecialForceAndDirection.x * -1, sideSpecialForceAndDirection.y));
+        }
     }
 
     public void EndSideSpecial()
     {
-        FreeFall = true;
+        FreeFall = true; 
+        inAction = false;
         //Freefall animaiton
     }
 
@@ -232,6 +241,7 @@ public class SpiScript : Character
     public void EndUpSpecial()
     {
         FreeFall = true;
+        inAction = false;
         //Freefall animaiton
         rb.velocity = Vector2.zero;
         resetGravity();
@@ -239,5 +249,13 @@ public class SpiScript : Character
     public void CounterAttack()
     {
         //Counter Animation
+    }
+
+    public IEnumerator EndUpSpecialTimer()
+    {
+        yield return new WaitForSecondsRealtime(.25f);
+        UnlockSideToSideMovement();
+        yield return new WaitForSecondsRealtime(.5f);
+        EndUpSpecial();
     }
 }

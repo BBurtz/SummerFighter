@@ -517,7 +517,7 @@ public class Character : MonoBehaviour
 
     public void resetGravity()
     {
-        if (LedgeGrabbed)
+        if (!LedgeGrabbed)
         {
             rb.gravityScale = GravityForce;
             fastFalling = false;
