@@ -63,8 +63,19 @@
             "bindings": [
                 {
                     "name": "",
-                    "id": "b0a7db9d-f089-4a73-9b56-36cb5ac03b3f",
+                    "id": "e173c2c5-76c8-478f-93a1-558be738f121",
                     "path": "<Gamepad>/leftShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2c6f57ac-025f-4996-8a2c-278a3984f2bf",
+                    "path": "",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -96,12 +107,12 @@
                 },
                 {
                     "name": "",
-                    "id": "1fe7088c-5004-497e-aaa8-3c1190eabbb8",
-                    "path": "<Gamepad>/buttonEast",
+                    "id": "50b2b516-e84c-4b93-8eab-bfe006899efc",
+                    "path": "",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Attack",
+                    "action": "Strong",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -118,12 +129,56 @@
                 },
                 {
                     "name": "",
+                    "id": "330d5119-1d0b-4912-a0e2-b2506a3ea795",
+                    "path": "<Gamepad>/buttonWest",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Special",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "5a8943d1-ea4c-4d2f-ae01-acd240103bf8",
                     "path": "<Gamepad>/rightTrigger",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "Shield",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "54ce2b69-8b93-4f16-81cc-37ff40f39566",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Shield",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1fe7088c-5004-497e-aaa8-3c1190eabbb8",
+                    "path": "<Gamepad>/buttonNorth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Attack",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "db5f1d0d-26b6-4a4f-8f7b-fd2c16113554",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Attack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
